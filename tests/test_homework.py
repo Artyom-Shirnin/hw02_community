@@ -1,5 +1,5 @@
+import pytest
 import re
-
 from django.contrib.admin.sites import site
 from django.contrib.auth import get_user_model
 from django.db.models import fields
@@ -64,6 +64,7 @@ class TestPost:
         assert group_field.null, \
             'Свойство `group` модели `Post` должно быть с атрибутом `null=True`'
 
+    @pytest.mark.django_db(transaction=True)
     def test_post_create(self, user):
         text = 'Тестовый пост'
         author = user
@@ -121,6 +122,7 @@ class TestGroup:
         assert type(description_field) == fields.TextField, \
             'Свойство `description` модели `Group` должно быть текстовым `TextField`'
 
+    @pytest.mark.django_db(transaction=True)
     def test_group_create(self, user):
         text = 'Тестовый пост'
         author = user
@@ -147,6 +149,7 @@ class TestGroup:
 
 class TestGroupView:
 
+    @pytest.mark.django_db(transaction=True)
     def test_group_view(self, client, post_with_group):
         try:
             response = client.get(f'/group/{post_with_group.group.slug}/')
@@ -181,11 +184,11 @@ class TestGroupView:
         ), 'Отредактируйте HTML-шаблон, не найдено описание группы `<p>{{ описание_группы }}</p>`'
 
         assert re.search(
-            r'<\s*p\s*>\s*' + post_with_group.text + r'\s*<\s*\/p\s*>',
+            r'<\s*p(\s+class=".+"|\s*)>\s*' + post_with_group.text + r'\s*<\s*\/p\s*>',
             html
-        ), 'Отредактируйте HTML-шаблон, не найден тест поста `<p>{{ текст_поста }}</p>`'
+        ), 'Отредактируйте HTML-шаблон, не найден текст поста `<p>{{ текст_поста }}</p>`'
 
         assert re.search(
-            r'дата публикации:\s*' + post_with_group.pub_date.strftime('%d %b %Y'),
+            r'(д|Д)ата публикации:\s*' + post_with_group.pub_date.strftime('%d %b %Y'),
             html
-        ), 'Отредактируйте HTML-шаблон, не найден тест поста `<p>{{ текст_поста }}</p>`'
+        ), 'Отредактируйте HTML-шаблон, не найдена дата публикации `дата публикации: {{ дата_публикации|date:"d M Y" }}`'
