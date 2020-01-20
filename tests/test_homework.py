@@ -152,9 +152,11 @@ class TestGroupView:
     @pytest.mark.django_db(transaction=True)
     def test_group_view(self, client, post_with_group):
         try:
-            response = client.get(f'/group/{post_with_group.group.slug}/')
+            response = client.get(f'/group/{post_with_group.group.slug}')
         except Exception as e:
             assert False, f'''Страница `/group/<slug>/` работает неправильно. Ошибка: `{e}`'''
+        if response.status_code in (301, 302):
+            response = client.get(f'/group/{post_with_group.group.slug}/')
         if response.status_code == 404:
             assert False, 'Страница `/group/<slug>/` не найдена, проверьте этот адрес в *urls.py*'
 
