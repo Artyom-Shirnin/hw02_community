@@ -1,5 +1,6 @@
-import pytest
 import re
+
+import pytest
 from django.contrib.admin.sites import site
 from django.contrib.auth import get_user_model
 from django.db.models import fields
