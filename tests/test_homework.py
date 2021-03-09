@@ -34,6 +34,30 @@ def search_refind(execution, user_code):
 
 class TestPost:
 
+    @pytest.mark.django_db(transaction=True)
+    def test_index_view(self, client, post, post_with_group):
+        try:
+            response = client.get('/')
+        except Exception as e:
+            assert False, f'''Главная страница работает неправильно. Ошибка: `{e}`'''
+        assert response.status_code != 404, (
+            'Главная страница не найдена, проверьте этот адрес в *urls.py*'
+        )
+        assert response.status_code != 500, (
+            'Главная страница не работает. Проверьте ее view-функцию'
+        )
+        assert response.status_code == 200, (
+            'Главная страница работает неправильно.'
+        )
+        # проверка моделей
+        response_text = response.content.decode()
+        posts = Post.objects.all()
+        for p in posts:
+            assert p.text in response_text, (
+                'Убедитесь, что на главной странице выводятся все посты '
+                'с сортировкой по убыванию даты публикации'
+            )
+
     def test_post_model(self):
         model_fields = Post._meta.fields
         text_field = search_field(model_fields, 'text')
