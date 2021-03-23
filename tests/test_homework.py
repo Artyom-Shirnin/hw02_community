@@ -4,6 +4,7 @@ import pytest
 from django.contrib.admin.sites import site
 from django.contrib.auth import get_user_model
 from django.db.models import fields
+from django.utils import translation
 from django.template.loader import get_template
 
 try:
@@ -192,6 +193,7 @@ class TestGroup:
 
 class TestGroupView:
 
+    @pytest.mark.freeze_time('2022-03-10')
     @pytest.mark.django_db(transaction=True)
     def test_group_view(self, client, post_with_group):
         try:
@@ -238,10 +240,20 @@ class TestGroupView:
             html
         ), 'Отредактируйте HTML-шаблон, не найден текст поста `<p>{{ текст_поста }}</p>`'
 
-        assert re.search(
-            r'(д|Д)ата публикации:\s*' + post_with_group.pub_date.strftime('%d %b %Y'),
-            html
-        ), (
-            'Отредактируйте HTML-шаблон, не найдена дата публикации '
-            '`дата публикации: {{ дата_публикации|date:"d M Y" }}`'
-        )
+        locale_lang = translation.get_language()
+        if locale_lang == 'ru':
+            assert re.search(
+                r'(д|Д)ата публикации:\s* 10 Мар 2022',
+                html
+            ), (
+                'Отредактируйте HTML-шаблон, не найдена дата публикации '
+                '`дата публикации: {{ дата_публикации|date:"d M Y" }}`'
+            )
+        else:
+            assert re.search(
+                r'(д|Д)ата публикации:\s* 10 Mar 2022',
+                html
+            ), (
+                'Отредактируйте HTML-шаблон, не найдена дата публикации '
+                '`дата публикации: {{ дата_публикации|date:"d M Y" }}`'
+            )
