@@ -241,7 +241,7 @@ class TestGroupView:
         ), 'Отредактируйте HTML-шаблон, не найден текст поста `<p>{{ текст_поста }}</p>`'
 
         locale_lang = translation.get_language()
-        if locale_lang == 'ru':
+        if locale_lang == 'ru-ru':
             assert re.search(
                 r'(д|Д)ата публикации:\s* 10 Мар 2022',
                 html
