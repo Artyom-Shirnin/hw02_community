@@ -5,7 +5,7 @@ from django.contrib.admin.sites import site
 from django.contrib.auth import get_user_model
 from django.db.models import fields
 from django.utils import translation
-from django.template.loader import get_template
+from django.template.loader import select_template
 
 try:
     from posts.models import Post
@@ -210,7 +210,8 @@ class TestGroupView:
         group = post_with_group.group
         html = response.content.decode()
 
-        html_template = get_template('group.html').template.source
+        templates_list = ['group.html', 'posts/group.html']
+        html_template = select_template(templates_list).template.source
 
         assert search_refind(r'{%\s*for\s+.+in.*%}', html_template), (
             'Отредактируйте HTML-шаблон, используйте тег цикла'
