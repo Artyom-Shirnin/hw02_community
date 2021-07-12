@@ -4,7 +4,7 @@ import pytest
 from django.contrib.admin.sites import site
 from django.contrib.auth import get_user_model
 from django.db.models import fields
-from django.template.loader import select_template
+from django.template.loader import get_template, select_template
 
 try:
     from posts.models import Post
@@ -35,7 +35,7 @@ def search_refind(execution, user_code):
 class TestPost:
 
     @pytest.mark.django_db(transaction=True)
-    def test_index_view(self, client, post, post_with_group):
+    def test_index_view(self, client, post_with_group):
         try:
             response = client.get('/')
         except Exception as e:
@@ -124,9 +124,18 @@ class TestPost:
         assert 'author' in admin_model.list_display, (
             'Добавьте `author` для отображения в списке модели административного сайта'
         )
-
+        assert 'group' in admin_model.list_display, (
+            'Добавьте `group` для отображения в списке модели административного сайта'
+        )
+        assert 'pk' in admin_model.list_display, (
+            'Добавьте `pk` для отображения в списке модели административного сайта'
+        )
         assert 'text' in admin_model.search_fields, (
             'Добавьте `text` для поиска модели административного сайта'
+        )
+
+        assert 'group' in admin_model.list_editable, (
+            'Добавьте `group` в поля доступные для редактирования в модели административного сайта'
         )
 
         assert 'pub_date' in admin_model.list_filter, (
@@ -208,7 +217,7 @@ class TestGroupView:
         group = post_with_group.group
         html = response.content.decode()
 
-        templates_list = ['group.html', 'posts/group.html']
+        templates_list = ['group_list.html', 'posts/group_list.html']
         html_template = select_template(templates_list).template.source
 
         assert search_refind(r'{%\s*for\s+.+in.*%}', html_template), (
@@ -217,18 +226,13 @@ class TestGroupView:
         assert search_refind(r'{%\s*endfor\s*%}', html_template), (
             'Отредактируйте HTML-шаблон, не найден тег закрытия цикла'
         )
-
         assert re.search(
-            r'<\s*title\s*>\s*Записи\s+сообщества\s+' + group.title + r'\s+\|\s+Yatube\s*<\s*\/title\s*>',
+            r'<\s*h1\s*>' + group.title + r'<\s*\/h1\s*>',
             html
         ), (
-            'Отредактируйте HTML-шаблон, не найдено название страницы '
-            '`<title>Записи сообщества {{ название_группы }} | Yatube</title>`'
+            'Отредактируйте HTML-шаблон, не найдено название группы '
+            '`<h1>{{ название группы }}</h1>`'
         )
-        assert re.search(
-            r'<\s*h1\s*>\s*' + group.title + r'\s*<\s*\/h1\s*>',
-            html
-        ), 'Отредактируйте HTML-шаблон, не найден заголовок группы `<h1>{{ название_группы }}</h1>`'
         assert re.search(
             r'<\s*p\s*>\s*' + group.description + r'\s*<\s*\/p\s*>',
             html
@@ -240,17 +244,22 @@ class TestGroupView:
         ), 'Отредактируйте HTML-шаблон, не найден текст поста `<p>{{ текст_поста }}</p>`'
 
         assert re.search(
-            r'(д|Д)ата публикации:\s*' + post_with_group.pub_date.strftime('%d %b %Y'),
+            r'(д|Д)ата публикации:\s*',
             html
         ), (
             'Отредактируйте HTML-шаблон, не найдена дата публикации '
-            '`дата публикации: {{ дата_публикации|date:"d M Y" }}`'
+            '`дата публикации: {{ дата_публикации|date:"d E Y" }}`'
         )
 
         assert re.search(
-            r'(а|А)втор\:\s' + post_with_group.author.get_full_name() + r'\,',
+            r'(а|А)втор\:\s' + post_with_group.author.get_full_name(),
             html,
         ), (
             'Отредактируйте HTML-шаблон, не найден автор публикации '
             '`Автор: {{ полное_имя_автора_поста }},`'
         )
+
+        base_template = get_template('base.html').template.source
+        assert re.search(
+            r'{\%\sload static\s\%}', base_template
+        ), 'Загрузите статику в base.html шаблоне'

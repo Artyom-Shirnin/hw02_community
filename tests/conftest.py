@@ -1,6 +1,12 @@
 import os
+
 from django.utils.version import get_version
-from yatube.settings import LANGUAGE_CODE
+
+from yatube.settings import INSTALLED_APPS
+
+assert any(app in INSTALLED_APPS for app in ['posts.apps.PostsConfig', 'posts']), (
+    'Пожалуйста зарегистрируйте приложение в `settings.INSTALLED_APPS`'
+)
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,7 +33,6 @@ if FILENAME not in project_dir_content:
     )
 
 assert get_version() < '3.0.0', 'Пожалуйста, используйте версию Django < 3.0.0'
-assert LANGUAGE_CODE == 'en-us', 'Пожалуйста, не меняйте `LANGUAGE_CODE`. Дефолтное значение, `en-us`'
 
 pytest_plugins = [
     'fixtures.fixture_user',
