@@ -34,6 +34,12 @@ if FILENAME not in project_dir_content:
 
 assert get_version() < '3.0.0', 'Пожалуйста, используйте версию Django < 3.0.0'
 
+process = Popen(['python', 'yatube/manage.py', 'makemigrations', '--check', '--dry-run', '--no-input'], stdout=PIPE, stderr=PIPE)
+stdout, _ = process.communicate()
+assert process.returncode == 0, f'Вы забыли сделать миграции.\n\n{stdout.decode("UTF-8")}'
+
+assert LANGUAGE_CODE == 'en-us', 'Пожалуйста, не меняйте `LANGUAGE_CODE`. Дефолтное значение, `en-us`'
+
 pytest_plugins = [
     'fixtures.fixture_user',
     'fixtures.fixture_data',
