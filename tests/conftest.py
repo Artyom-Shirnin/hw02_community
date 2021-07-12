@@ -27,7 +27,7 @@ if FILENAME not in project_dir_content:
 
 from django.utils.version import get_version
 
-from yatube.settings import INSTALLED_APPS
+from yatube.settings import INSTALLED_APPS, LANGUAGE_CODE
 
 assert any(app in INSTALLED_APPS for app in ['posts.apps.PostsConfig', 'posts']), (
     'Пожалуйста зарегистрируйте приложение в `settings.INSTALLED_APPS`'
