@@ -26,20 +26,17 @@ if FILENAME not in project_dir_content:
     )
 
 from django.utils.version import get_version
+assert get_version() < '3.0.0', 'Пожалуйста, используйте версию Django < 3.0.0'
 
-from yatube.settings import INSTALLED_APPS, LANGUAGE_CODE
-
+from yatube.settings import INSTALLED_APPS
 assert any(app in INSTALLED_APPS for app in ['posts.apps.PostsConfig', 'posts']), (
     'Пожалуйста зарегистрируйте приложение в `settings.INSTALLED_APPS`'
 )
 
-assert get_version() < '3.0.0', 'Пожалуйста, используйте версию Django < 3.0.0'
-
-process = Popen(['python', 'yatube/manage.py', 'makemigrations', '--check', '--dry-run', '--no-input'], stdout=PIPE, stderr=PIPE)
+process = Popen(['python', 'yatube/manage.py', 'makemigrations', '--check', '--dry-run', '--no-input'], stdout=PIPE,
+                stderr=PIPE)
 stdout, _ = process.communicate()
 assert process.returncode == 0, f'Вы забыли сделать миграции.\n\n{stdout.decode("UTF-8")}'
-
-assert LANGUAGE_CODE == 'en-us', 'Пожалуйста, не меняйте `LANGUAGE_CODE`. Дефолтное значение, `en-us`'
 
 pytest_plugins = [
     'fixtures.fixture_user',
